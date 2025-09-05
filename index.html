@@ -3,68 +3,50 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>MBS 4-Phase Roadmap</title>
-  <meta name="description" content="MBS 4-phase company roadmap with milestones">
+  <title>MBS 4-Phase Roadmap (Gated)</title>
+  <meta name="description" content="MBS 4-phase company roadmap with gated milestones">
   <style>
     :root{
-      --navy:#0b1730;
-      --ink:#111827;
-      --gold:#d4af37;
       --bg:#0f1b36;
       --card:#121f3f;
       --muted:#94a3b8;
-      --ring:#3b82f6;
       --white:#ffffff;
     }
     *{box-sizing:border-box}
     html,body{margin:0;padding:0;background:linear-gradient(180deg,var(--bg),#050a17);color:var(--white);font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif}
-    a{color:var(--gold);text-decoration:none}
-    header{
-      padding:32px 16px 8px;
-      text-align:center;
-      border-bottom:1px solid rgba(255,255,255,0.08);
-    }
+    a{color:var(--white);text-decoration:underline}
+    header{padding:32px 16px 8px;text-align:center;border-bottom:1px solid rgba(255,255,255,0.08);}
     .wrap{max-width:920px;margin:0 auto;padding:24px 16px 64px}
     .badge{display:inline-flex;gap:8px;align-items:center;padding:6px 10px;border:1px solid rgba(255,255,255,.12);border-radius:999px;font-size:12px;color:var(--muted);}
     h1{margin:10px 0 6px;font-size:32px;letter-spacing:.3px}
     .subtitle{color:var(--muted);font-size:14px}
     .grid{display:grid;grid-template-columns:1fr;gap:16px;margin-top:24px}
     @media(min-width:860px){.grid{grid-template-columns:1fr 1fr}}
-    .card{
-      background:linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02));
-      border:1px solid rgba(255,255,255,0.08);
-      border-radius:16px;
-      padding:18px 16px;
-      backdrop-filter: blur(6px);
-      box-shadow:0 6px 30px rgba(0,0,0,.35);
-    }
-    details{border-radius:12px}
-    summary{
-      cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;
-      padding:10px 0;font-weight:600;font-size:18px;
-    }
+    .card{position:relative;background:linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02));border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:18px 16px;backdrop-filter: blur(6px);box-shadow:0 6px 30px rgba(0,0,0,.35);}
+    summary{cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;padding:10px 0;font-weight:600;font-size:18px;}
     summary::-webkit-details-marker{display:none}
     .goal{color:var(--muted);font-size:14px;margin:-8px 0 10px}
     ul{list-style:none;padding:0;margin:0}
     li{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px dashed rgba(255,255,255,.06)}
     li:last-child{border-bottom:none}
-    input[type="checkbox"]{
-      width:18px;height:18px;border-radius:4px;border:1px solid rgba(255,255,255,.25);
-      background:rgba(255,255,255,.04);appearance:none;display:grid;place-content:center;cursor:pointer;
-    }
-    input[type="checkbox"]:checked{background:var(--gold);border-color:var(--gold)}
+    input[type="checkbox"]{width:18px;height:18px;border-radius:4px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.04);appearance:none;cursor:pointer;}
+    input[type="checkbox"]:checked{background:var(--white);border-color:var(--white)}
     .progress{height:8px;background:rgba(255,255,255,.08);border-radius:999px;overflow:hidden;margin-top:10px}
-    .bar{height:100%;width:0%;background:linear-gradient(90deg,var(--gold),#ffd36a)}
+    .bar{height:100%;width:0%;background:linear-gradient(90deg,var(--white),var(--muted))}
     .foot{margin-top:18px;font-size:12px;color:var(--muted)}
     .small{font-size:12px;color:var(--muted)}
     .phase-num{font-size:12px;color:var(--muted);}
+
+    .locked{filter:blur(2px) contrast(0.9) opacity(0.6);}
+    .lock-banner{position:absolute;top:12px;right:12px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);backdrop-filter:blur(4px);padding:6px 10px;border-radius:999px;font-size:12px;color:var(--muted);}
+    .blocker{position:absolute;inset:0}
   </style>
 </head>
 <body>
   <header>
     <div class="badge">MBS • Roadmap</div>
     <h1>MBS 4-Phase Roadmap</h1>
-    <div class="subtitle">Milestone tracker with local progress saving.</div>
+    <div class="subtitle">Each phase unlocks when the previous one is 100% complete.</div>
   </header>
   <main class="wrap">
     <div id="grid" class="grid"></div>
@@ -83,46 +65,87 @@
       for(let i=0;i<count;i++){ if(localStorage.getItem(keyFor(id,i))==='1') done++; }
       return Math.round((done/count)*100);
     }
+    function isComplete(phase){
+      return phaseProgress(phase.id, phase.milestones.length) === 100;
+    }
 
     function render(){
       grid.innerHTML = '';
-      data.phases.forEach(phase => {
+      data.phases.forEach((phase, idx) => {
         const card = document.createElement('div');
         card.className = 'card';
         const count = phase.milestones.length;
         const pct = phaseProgress(phase.id, count);
 
-        card.innerHTML = `
-          <details open>
-            <summary>
-              <div>
-                <div class="phase-num">Phase ${phase.id}</div>
-                ${phase.name}
-              </div>
-              <div class="small">${pct}%</div>
-            </summary>
-            <div class="goal">${phase.goal}</div>
-            <ul>
-              ${phase.milestones.map((m, i)=>`
-                <li>
-                  <input type="checkbox" data-phase="${phase.id}" data-index="${i}" ${localStorage.getItem(keyFor(phase.id,i))==='1'?'checked':''} />
-                  <span>${m}</span>
-                </li>
-              `).join('')}
-            </ul>
-            <div class="progress"><div class="bar" style="width:${pct}%"></div></div>
-          </details>
+        const details = document.createElement('details');
+        const summary = document.createElement('summary');
+        summary.innerHTML = `
+          <div>
+            <div class="phase-num">Phase ${phase.id}</div>
+            ${phase.name}
+          </div>
+          <div class="small">${pct}%</div>
         `;
-        grid.appendChild(card);
-      });
+        details.appendChild(summary);
 
-      grid.querySelectorAll('input[type="checkbox"]').forEach(cb => {
-        cb.addEventListener('change', e => {
-          const phaseId = e.target.getAttribute('data-phase');
-          const idx = e.target.getAttribute('data-index');
-          localStorage.setItem(keyFor(phaseId, idx), e.target.checked ? '1' : '0');
-          render();
+        const goal = document.createElement('div');
+        goal.className = 'goal';
+        goal.textContent = phase.goal;
+        details.appendChild(goal);
+
+        const ul = document.createElement('ul');
+        phase.milestones.forEach((m, i) => {
+          const li = document.createElement('li');
+          const cb = document.createElement('input');
+          cb.type = 'checkbox';
+          cb.setAttribute('data-phase', phase.id);
+          cb.setAttribute('data-index', i);
+          if(localStorage.getItem(keyFor(phase.id,i))==='1') cb.checked = true;
+          const span = document.createElement('span');
+          span.textContent = m;
+          li.appendChild(cb);
+          li.appendChild(span);
+          ul.appendChild(li);
         });
+        details.appendChild(ul);
+
+        const prog = document.createElement('div');
+        prog.className = 'progress';
+        const bar = document.createElement('div');
+        bar.className = 'bar';
+        bar.style.width = pct + '%';
+        prog.appendChild(bar);
+        details.appendChild(prog);
+
+        let unlocked = (idx === 0) ? true : isComplete(data.phases[idx-1]);
+        if(unlocked){ details.open = true; }
+        else {
+          details.classList.add('locked');
+          const banner = document.createElement('div');
+          banner.className = 'lock-banner';
+          banner.textContent = 'Locked — Complete previous phase to unlock';
+          card.appendChild(banner);
+
+          ul.querySelectorAll('input[type="checkbox"]').forEach(el => { el.disabled = true; });
+
+          details.addEventListener('click', (e) => { e.preventDefault(); }, true);
+          const blocker = document.createElement('div');
+          blocker.className = 'blocker';
+          blocker.addEventListener('click', (e)=> e.preventDefault());
+          card.appendChild(blocker);
+        }
+
+        ul.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+          cb.addEventListener('change', e => {
+            const phaseId = e.target.getAttribute('data-phase');
+            const idx = e.target.getAttribute('data-index');
+            localStorage.setItem(keyFor(phaseId, idx), e.target.checked ? '1' : '0');
+            render();
+          });
+        });
+
+        card.appendChild(details);
+        grid.appendChild(card);
       });
     }
     render();
